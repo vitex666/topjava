@@ -33,18 +33,15 @@ public class UserMealsUtil {
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         Map<LocalDate, Integer> caloriesSumPerDay = new HashMap<>();
         for (UserMeal meal : meals) {
-            LocalDate ld = meal.getDateTime().toLocalDate();
-            caloriesSumPerDay.merge(ld, meal.getCalories(), Integer::sum);
+            caloriesSumPerDay.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
 
         }
         List<UserMealWithExcess> resultList = new ArrayList<>();
         for (UserMeal meal : meals) {
             if (isBetweenHalfOpen(meal.getDateTime().toLocalTime(), startTime, endTime)) {
-                LocalDate ld = meal.getDateTime().toLocalDate();
-                Integer calories = caloriesSumPerDay.get(ld);
-                boolean excess = calories > caloriesPerDay;
-                UserMealWithExcess userMealWithExcess = new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
-                resultList.add(userMealWithExcess);
+                boolean excess = caloriesSumPerDay.get(meal.getDateTime().toLocalDate()) > caloriesPerDay;
+                resultList.add(
+                        new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess));
             }
         }
         return resultList;
@@ -57,8 +54,7 @@ public class UserMealsUtil {
         return meals.stream()
                 .filter(meal -> isBetweenHalfOpen(meal.getDateTime().toLocalTime(), startTime, endTime))
                 .map(meal -> {
-                    Integer calories = caloriesSumPerDey.get(meal.getDateTime().toLocalDate());
-                    boolean excess = calories > caloriesPerDay;
+                    boolean excess = caloriesSumPerDey.get(meal.getDateTime().toLocalDate()) > caloriesPerDay;
                     return new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
                 })
                 .collect(Collectors.toList());
